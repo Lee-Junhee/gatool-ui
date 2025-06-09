@@ -323,6 +323,7 @@ function App() {
     { teamNumber: null, station: "Blue3", surrogate: false, dq: false },
   ]);
   const [adHocMode, setAdHocMode] = useState(null);
+  const [nexusMode, setNexusMode] = useState(null);
   const [backupTeam, setBackupTeam] = useState(null);
   const [showReloaded, setShowReloaded] = usePersistentState(
     "cache:showReloaded",
@@ -637,10 +638,63 @@ function App() {
       //set playoffschedule to be empty
       playoffschedule = { schedule: { schedule: [] } };
     } else if (!selectedEvent?.value?.code.includes("PRACTICE")) {
-      const playoffResult = await httpClient.getNoAuth(
-        `${selectedYear?.value}/schedule/hybrid/${selectedEvent?.value.code}/playoff`
-      );
-      playoffschedule = await playoffResult.json();
+      if (!nexusMode) {
+        const playoffResult = await httpClient.getNoAuth(
+          `${selectedYear?.value}/schedule/hybrid/${selectedEvent?.value.code}/playoff`
+        );
+        playoffschedule = await playoffResult.json();
+      } else {
+        const nexusResponse = await fetch('https://frc.nexus/api/v1/event/2025mawo', { // foregoing a selector for the sake of time, hard coded for BC25
+          method: 'GET',
+          headers: {
+            'Nexus-Api-Key': 'Vn6D9y80kQcNijDItKOJHg8yYEk' //cheesy-arena's (public?) nexus API key- allows viewing of lineups for future matches, as soon as alliance submit them
+          }
+        });
+        const nexusMatches = await nexusResponse.json();
+        const playoffMatches = nexusMatches['matches'].filter(match => !(match['label'].includes('Qualification') || match['label'].includes('Practice')));
+        playoffschedule = { "Schedule": {"schedule": playoffMatches.map((match) => ({
+          "tournamentLevel": "Playoff",
+          "description": match['label'],
+          "startTime": new Date(match['times']['estimatedStartTime']).toISOString().split(".")[0],
+          "matchNumber": playoffMatches.indexOf(match),
+          "teams": [
+            {
+              "teamNumber": match['redTeams'][0] ? parseInt(match['redTeams'][0]) : null,
+              "station": "Red1",
+              "surrogate": !1
+            },{
+              "teamNumber": match['redTeams'][1] ? parseInt(match['redTeams'][1]) : null,
+              "station": "Red2",
+              "surrogate": !1
+            },{
+              "teamNumber": match['redTeams'][2] ? parseInt(match['redTeams'][2]) : null,
+              "station": "Red3",
+              "surrogate": !1
+            },{
+              "teamNumber": match['redTeams'][3] ? parseInt(match['redTeams'][3]) : null,
+              "station": "Red4",
+              "surrogate": !1
+            },{
+              "teamNumber": match['blueTeams'][0] ? parseInt(match['blueTeams'][0]) : null,
+              "station": "Blue1",
+              "surrogate": !1
+            },{
+              "teamNumber": match['blueTeams'][1] ? parseInt(match['blueTeams'][1]) : null,
+              "station": "Blue2",
+              "surrogate": !1
+            },{
+              "teamNumber": match['blueTeams'][2] ? parseInt(match['blueTeams'][2]) : null,
+              "station": "Blue3",
+              "surrogate": !1
+            },{
+              "teamNumber": match['blueTeams'][3] ? parseInt(match['blueTeams'][3]) : null,
+              "station": "Blue4",
+              "surrogate": !1
+            }
+          ]
+        }))
+        }};
+      }
     } else {
       if (
         selectedEvent?.value?.code === "PRACTICE1" ||
@@ -2566,6 +2620,8 @@ function App() {
                     isAuthenticated={isAuthenticated}
                     adHocMode={adHocMode}
                     setAdHocMode={setAdHocMode}
+                    nexusMode={nexusMode}
+                    setNexusMode={setNexusMode}
                     supportedYears={supportedYears}
                     reloadPage={reloadPage}
                     autoHideSponsors={autoHideSponsors}
@@ -2730,6 +2786,7 @@ function App() {
                     adHocMatch={adHocMatch}
                     setAdHocMatch={setAdHocMatch}
                     adHocMode={adHocMode}
+                    nexusMode={nexusMode}
                     offlinePlayoffSchedule={offlinePlayoffSchedule}
                     swapScreen={swapScreen}
                     autoHideSponsors={autoHideSponsors}
@@ -2782,6 +2839,7 @@ function App() {
                     adHocMatch={adHocMatch}
                     setAdHocMatch={setAdHocMatch}
                     adHocMode={adHocMode}
+                    nexusMode={nexusMode}
                     offlinePlayoffSchedule={offlinePlayoffSchedule}
                     hidePracticeSchedule={hidePracticeSchedule}
                     teamReduction={teamReduction}
