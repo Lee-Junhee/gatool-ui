@@ -41,6 +41,7 @@ function PlayByPlayPage({
   adHocMatch,
   setAdHocMatch,
   adHocMode,
+  nexusMode,
   hidePracticeSchedule,
   teamReduction,
   qualsLength,
@@ -102,7 +103,7 @@ function PlayByPlayPage({
       matchDetails?.teams[
         _.findIndex(matchDetails?.teams, { station: `${alliance}1` })
       ]?.alliance;
-    if (station.slice(-1) !== "4") {
+    if (station.slice(-1) !== "4" || (inPlayoffs && nexusMode)) {
       team =
         matchDetails?.teams[
           _.findIndex(matchDetails?.teams, { station: station })

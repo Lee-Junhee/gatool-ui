@@ -45,6 +45,7 @@ function AnnouncePage({
   adHocMatch,
   setAdHocMatch,
   adHocMode,
+  nexusMode,
   offlinePlayoffSchedule,
   swapScreen,
   autoHideSponsors,
@@ -91,7 +92,7 @@ function AnnouncePage({
         _.findIndex(matchDetails?.teams, { station: `${alliance}1` })
       ]?.alliance;
 
-    if (station.slice(-1) !== "4") {
+    if (station.slice(-1) !== "4" || (inPlayoffs && nexusMode)) {
       team =
         matchDetails?.teams[
           _.findIndex(matchDetails?.teams, { station: station })
